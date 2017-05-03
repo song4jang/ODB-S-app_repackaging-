@@ -106,8 +106,31 @@ int main()
         }
         else
         {
+			// 0. 입력 인자를 초기화 한다.
+			// argv[1] : 작업대상 경로
+			// argv[2] : java path
+			// argv[3] : as-is command
+			// argv[4] : to-be command
+
+			int nCnt = 0;
+			LPWSTR* pStr = NULL;
+
+			CString str_src_path;
+
+			pStr = CommandLineToArgvW(GetCommandLine(), &nCnt);
+
+			if (nCnt >= 1)
+			{
+				str_src_path.Format(L"%s", pStr[1]);  //배열 처럼 쓸수있다. // pStr[0]은 실행파일. 1번부터가 인자
+			}
+			else
+			{
+				AfxMessageBox(L"not enough argument");
+				return 0;
+			}
+
 			// 1. 작업 대상 디렉토리 생성 - 작업대상 디렉토리명 구성(년_월_일_시분초)
-			CString str_src_path("C:\\Users\\song4jang\\Documents\\Visual Studio 2015\\Projects\\ODB_S_Automation_Tool\\apk");
+			//CString str_src_path("C:\\Users\\song4jang\\Documents\\Visual Studio 2015\\Projects\\ODB_S_Automation_Tool\\apk");
 			CString str_target_dir(str_src_path);
 			str_target_dir += "\\";
 			str_target_dir += GetDateFolderName();
