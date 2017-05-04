@@ -22,18 +22,32 @@ typedef struct _stMyFileInfo
 	CString str_file_title;
 }myFileInfo;
 
-BOOL FindFile(IN CString str_find_path, OUT CList<myFileInfo, myFileInfo&> &list_file)
+
+typedef struct _stFindInfo
+{
+	int nCnt;
+	CString str_file_full_path;
+	CString str_file_name;
+}FindInfo;
+
+BOOL FindFile(IN CString str_find_path, IN CString str_filter, OUT CList<myFileInfo, myFileInfo&> &list_file)
 {
 	try
 	{
 		CFileFind finder;
-		BOOL working = finder.FindFile(str_find_path);
+		BOOL working = finder.FindFile(str_find_path + str_filter);
 		while (working)
 		{
 			working = finder.FindNextFile();
 
 			if (finder.IsDots())
 				continue;
+
+//			wprintf(L"%s\n", finder.GetFilePath());
+
+			if (finder.IsDirectory())
+				FindFile(finder.GetFilePath(), str_filter, list_file);
+
 
 			myFileInfo myFile;
 			myFile.str_file_full_path = finder.GetFilePath();
@@ -115,7 +129,15 @@ void ExtractSmali(IN CString str_target_unzip_path, IN CString str_src_path, IN 
 		wprintf(L"str_command : %s\n\n", str_command.GetBuffer(0));
 #endif
 
-		ShellExecute(NULL, L"open", L"java", str_command, NULL, SW_SHOW);
+		SHELLEXECUTEINFO ShExecInfo = {0, };
+		ShExecInfo.cbSize = sizeof(SHELLEXECUTEINFO);
+		ShExecInfo.fMask = SEE_MASK_NOCLOSEPROCESS;
+		ShExecInfo.lpVerb = L"open";
+		ShExecInfo.lpFile = L"java";
+		ShExecInfo.lpParameters = str_command;
+		ShExecInfo.nShow = SW_SHOW;
+		ShellExecuteEx(&ShExecInfo);
+		WaitForSingleObject(ShExecInfo.hProcess, INFINITE);
 	}
 	catch (exception& e)
 	{
@@ -125,6 +147,29 @@ void ExtractSmali(IN CString str_target_unzip_path, IN CString str_src_path, IN 
 	}
 }
 
+void FindKeyword(IN CString str_find_path, IN CString str_find_keyword, OUT CList<FindInfo, FindInfo&> &list_find)
+{
+	try
+	{
+		CList <myFileInfo, myFileInfo&> list_found_file;
+		FindFile(str_find_path, str_find_keyword, list_found_file);
+
+		for (int i = 0; i < list_found_file.GetCount(); i++)
+		{
+			
+		}
+		
+		//list_found_file
+		//FindInfo find_info;
+		//list_find.AddTail(find_info);
+	}
+	catch (exception& e)
+	{
+		CString str_err;
+		str_err.Format(L"exception, e.what(%s)\n", e.what());
+		MessageBox(NULL, str_err, NULL, MB_OK | MB_ICONERROR);
+	}
+}
 
 int main()
 {
@@ -173,7 +218,9 @@ int main()
 			// 2. 작업 대상 파일을 색출하여, 작업 대상 디렉토리로 다음과 같은 행위를 한다.
 			// 이름변경(apk->zip) 복사, 압축해제, dex -> smali
 			CList <myFileInfo, myFileInfo&> list_found_file;
-			FindFile(str_src_path + L"\\*.apk", list_found_file);
+			FindFile(str_src_path, CString(L"\\*.apk"), list_found_file);
+
+			CList <FindInfo, FindInfo&> list_found_info;
 
 			CString str_target_unzip_path;
 			CString str_target_full_path;
@@ -189,16 +236,19 @@ int main()
 				str_target_unzip_path = str_target_full_path;
 				str_target_full_path += L".zip";
 #ifdef _DEBUG
-				wprintf(L"\nfile : %s\n", str_target_full_path.GetBuffer(0));
+				wprintf(L"\n%d - file : %s\n", i, str_target_full_path.GetBuffer(0));
 #endif
 				// 2.1 이름변경(apk->zip) 복사
 				CopyFileEx(st_file_info.str_file_full_path, str_target_full_path, NULL, NULL, NULL, COPY_FILE_FAIL_IF_EXISTS);
 				
 				// 2.2 압축해제
 				UnZipFile(str_target_full_path, str_target_unzip_path);
-				
+
 				// 2.3 dex -> smali
 				ExtractSmali(str_target_unzip_path, str_src_path, L"baksmali-2.0.5.jar");
+
+				// 2.4 find command
+				FindKeyword(str_target_unzip_path + CString(L"\\out"), CString(L"\\*.*"), list_found_info);
 			}
         }
     }
