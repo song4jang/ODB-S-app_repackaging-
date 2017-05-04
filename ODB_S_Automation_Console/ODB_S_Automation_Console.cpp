@@ -109,16 +109,12 @@ int main()
 			// 0. 입력 인자를 초기화 한다.
 			// argv[1] : 작업대상 경로
 			// argv[2] : java path
-			// argv[3] : as-is command
-			// argv[4] : to-be command
-
+			// argv[3] : find command
 			int nCnt = 0;
-			LPWSTR* pStr = NULL;
+			
+			LPWSTR *pStr = CommandLineToArgvW(GetCommandLine(), &nCnt);
 
 			CString str_src_path;
-
-			pStr = CommandLineToArgvW(GetCommandLine(), &nCnt);
-
 			if (nCnt >= 1)
 			{
 				str_src_path.Format(L"%s", pStr[1]);  //배열 처럼 쓸수있다. // pStr[0]은 실행파일. 1번부터가 인자
@@ -130,7 +126,6 @@ int main()
 			}
 
 			// 1. 작업 대상 디렉토리 생성 - 작업대상 디렉토리명 구성(년_월_일_시분초)
-			//CString str_src_path("C:\\Users\\song4jang\\Documents\\Visual Studio 2015\\Projects\\ODB_S_Automation_Tool\\apk");
 			CString str_target_dir(str_src_path);
 			str_target_dir += "\\";
 			str_target_dir += GetDateFolderName();
@@ -141,25 +136,36 @@ int main()
 				return 1;
 			}
 			
-			// 2. 작업 대상 파일을 색출하여, 작업 대상 디렉토리로 복사 / 이름변경(apk->zip)한다.
-			CString str_src_full_path(L"C:\\Users\\song4jang\\Documents\\Visual Studio 2015\\Projects\\ODB_S_Automation_Tool\\apk\\*.apk");
+			// 2. 작업 대상 파일을 색출하여, 작업 대상 디렉토리로 다음과 같은 행위를 한다.
+			// 2.1 이름변경(apk->zip) 복사
+			// 2.2 압축해제
 			CList <myFileInfo, myFileInfo&> list_found_file;
-			FindFile(str_src_full_path, list_found_file);
+			FindFile(str_src_path + L"\\*.apk", list_found_file);
+
+			CString str_target_unzip_path;
+			CString str_target_full_path;
 
 			POSITION pos = list_found_file.GetHeadPosition();
 			for (int i = 0; i < list_found_file.GetCount(); i++)
 			{
 				myFileInfo st_file_info = list_found_file.GetNext(pos);
 
-				CString str_target_full_path(str_target_dir);
+				str_target_full_path = str_target_dir;
+				//str_target_unzip_path = str_target_full_path;
 				str_target_full_path += L"\\";
 				str_target_full_path += st_file_info.str_file_title;
+				str_target_unzip_path = str_target_full_path;
 				str_target_full_path += L".zip";
+#ifdef _DEBUG
+				printf("\nfile : %ws\n", str_target_full_path.GetBuffer(0));
+#endif
 
 				CopyFileEx(st_file_info.str_file_full_path, str_target_full_path, NULL, NULL, NULL, COPY_FILE_FAIL_IF_EXISTS);
+
+				UnZipFile(str_target_full_path, str_target_unzip_path);
 			}
 			
-			// 3. 작업 대상 파일을 색출하여, 작업 대상 디렉토리로 복사한다.
+			// 3. 각 폴더 별 압축을 해제 한다.
 
 			//CString str_src_zip_file("C:\\Users\\song4jang\\Documents\\Visual Studio 2015\\Projects\\apk\\org.prowl.torquefree.zip");
 			//CString str_dest_file("C:\\Users\\song4jang\\Documents\\Visual Studio 2015\\Projects\\apk\\org.prowl.torquefree");
