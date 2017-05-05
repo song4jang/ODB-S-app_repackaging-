@@ -17,17 +17,21 @@ using namespace std;
 
 typedef struct _stMyFileInfo
 {
-	CString str_file_full_path;
-	CString str_file_name;
-	CString str_file_title;
+	CString str_file_full_path;		// c:\\aaa.txt
+	CString str_file_name;			// aaa.txt
+	CString str_file_title;			// aaa
 }myFileInfo;
 
+typedef struct _stFindFileInfo
+{
+	CString str_file_full_path;
+	CString str_file_name;
+	int num_line;
+}FindFileInfo;
 
 typedef struct _stFindInfo
 {
-	int nCnt;
-	CString str_file_full_path;
-	CString str_file_name;
+	FindFileInfo st_find_file_info;
 }FindInfo;
 
 BOOL FindFile(IN CString str_find_path, IN CString str_filter, OUT CList<myFileInfo, myFileInfo&> &list_file)
@@ -147,21 +151,47 @@ void ExtractSmali(IN CString str_target_unzip_path, IN CString str_src_path, IN 
 	}
 }
 
-void FindKeyword(IN CString str_find_path, IN CString str_find_keyword, OUT CList<FindInfo, FindInfo&> &list_find)
+void FindKeyword(IN CString str_find_path, IN CString str_filter, IN CString str_find_keyword, OUT CList<FindInfo, FindInfo&> &list_find)
 {
 	try
 	{
+		// 1. 모든 파일을 나열하고, 검색한다.
+		// 경로 : str_find_path 하위
+		// 필터 : str_find_keyword
 		CList <myFileInfo, myFileInfo&> list_found_file;
-		FindFile(str_find_path, str_find_keyword, list_found_file);
+		FindFile(str_find_path, str_filter, list_found_file);
+
+		POSITION pos = list_found_file.GetHeadPosition();
+		CStdioFile stdio_src_file;
+		CString str_read_line;
 
 		for (int i = 0; i < list_found_file.GetCount(); i++)
 		{
-			
+			myFileInfo st_file_info = list_found_file.GetNext(pos);
+
+			if (stdio_src_file.Open(st_file_info.str_file_full_path, CFile::modeRead))
+			{
+				int nLineCnt = 0;
+				while (stdio_src_file.ReadString(str_read_line))
+				{
+					nLineCnt++;
+					
+					if (str_read_line.Find(str_find_keyword) != -1)
+					{
+						FindInfo info;
+						info.st_find_file_info.num_line = nLineCnt;
+						info.st_find_file_info.str_file_full_path = st_file_info.str_file_full_path;
+						info.st_find_file_info.str_file_name = st_file_info.str_file_name;
+
+						list_find.AddTail(info);
+#ifdef _DEBUG
+						wprintf(L"nLineCnt %d, st_file_info.str_file_full_path : %s\n\n", nLineCnt, st_file_info.str_file_full_path.GetBuffer(0));
+#endif
+					}
+				}
+				stdio_src_file.Close();
+			}
 		}
-		
-		//list_found_file
-		//FindInfo find_info;
-		//list_find.AddTail(find_info);
 	}
 	catch (exception& e)
 	{
@@ -194,9 +224,11 @@ int main()
 			LPWSTR *pStr = CommandLineToArgvW(GetCommandLine(), &nCnt);
 
 			CString str_src_path;
+			CString str_find_command;
 			if (nCnt >= 2)
 			{
 				str_src_path.Format(L"%s", pStr[1]);  //배열 처럼 쓸수있다. // pStr[0]은 실행파일. 1번부터가 인자
+				str_find_command.Format(L"%s", pStr[2]);
 			}
 			else
 			{
@@ -216,7 +248,7 @@ int main()
 			}
 			
 			// 2. 작업 대상 파일을 색출하여, 작업 대상 디렉토리로 다음과 같은 행위를 한다.
-			// 이름변경(apk->zip) 복사, 압축해제, dex -> smali
+			// 이름변경(apk->zip) 복사, 압축해제, dex -> smali, find command
 			CList <myFileInfo, myFileInfo&> list_found_file;
 			FindFile(str_src_path, CString(L"\\*.apk"), list_found_file);
 
@@ -235,9 +267,9 @@ int main()
 				str_target_full_path += st_file_info.str_file_title;
 				str_target_unzip_path = str_target_full_path;
 				str_target_full_path += L".zip";
-#ifdef _DEBUG
+
 				wprintf(L"\n%d - file : %s\n", i, str_target_full_path.GetBuffer(0));
-#endif
+
 				// 2.1 이름변경(apk->zip) 복사
 				CopyFileEx(st_file_info.str_file_full_path, str_target_full_path, NULL, NULL, NULL, COPY_FILE_FAIL_IF_EXISTS);
 				
@@ -248,9 +280,23 @@ int main()
 				ExtractSmali(str_target_unzip_path, str_src_path, L"baksmali-2.0.5.jar");
 
 				// 2.4 find command
-				FindKeyword(str_target_unzip_path + CString(L"\\out"), CString(L"\\*.*"), list_found_info);
+				FindKeyword(str_target_unzip_path + CString(L"\\out"), CString(L"\\*.*"), str_find_command, list_found_info);
 			}
-        }
+			
+			// 3. 찾은 정보를 나열
+			wprintf(L"############# result of search #############\n");
+			wprintf(L" str_src_path(%s) \n", str_src_path.GetBuffer(0));
+			wprintf(L" str_find_command(%s) \n", str_find_command.GetBuffer(0));
+			wprintf(L"############################################\n\n");
+
+			pos = list_found_info.GetHeadPosition();
+			for (int i = 0; i < list_found_info.GetCount(); i++)
+			{
+				FindInfo st_find_info = list_found_info.GetNext(pos);
+				wprintf(L"Line(%d), file path(%s)\n", st_find_info.st_find_file_info.num_line, st_find_info.st_find_file_info.str_file_full_path.GetBuffer(0));
+				st_find_info.st_find_file_info.str_file_full_path.ReleaseBuffer();
+			}
+		}
     }
     else
     {
