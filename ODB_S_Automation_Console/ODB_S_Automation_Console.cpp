@@ -31,6 +31,7 @@ typedef struct _stFindFileInfo
 
 typedef struct _stFindInfo
 {
+	CString str_apk_file_name;
 	FindFileInfo st_find_file_info;
 }FindInfo;
 
@@ -51,7 +52,6 @@ BOOL FindFile(IN CString str_find_path, IN CString str_filter, OUT CList<myFileI
 
 			if (finder.IsDirectory())
 				FindFile(finder.GetFilePath(), str_filter, list_file);
-
 
 			myFileInfo myFile;
 			myFile.str_file_full_path = finder.GetFilePath();
@@ -159,7 +159,7 @@ void FindKeyword(IN CString str_find_path, IN CString str_filter, IN CString str
 		// 경로 : str_find_path 하위
 		// 필터 : str_find_keyword
 		CList <myFileInfo, myFileInfo&> list_found_file;
-		FindFile(str_find_path, str_filter, list_found_file);
+		FindFile(str_find_path + CString(L"\\out"), str_filter, list_found_file);
 
 		POSITION pos = list_found_file.GetHeadPosition();
 		CStdioFile stdio_src_file;
@@ -182,6 +182,7 @@ void FindKeyword(IN CString str_find_path, IN CString str_filter, IN CString str
 						info.st_find_file_info.num_line = nLineCnt;
 						info.st_find_file_info.str_file_full_path = st_file_info.str_file_full_path;
 						info.st_find_file_info.str_file_name = st_file_info.str_file_name;
+						info.str_apk_file_name = str_find_path + CString(L".apk");
 
 						list_find.AddTail(info);
 #ifdef _DEBUG
@@ -257,6 +258,8 @@ int main()
 			CString str_target_unzip_path;
 			CString str_target_full_path;
 
+			wprintf(L"\n\n####################################### Analyzing APK File #######################################\n");
+
 			POSITION pos = list_found_file.GetHeadPosition();
 			for (int i = 0; i < list_found_file.GetCount(); i++)
 			{
@@ -268,7 +271,9 @@ int main()
 				str_target_unzip_path = str_target_full_path;
 				str_target_full_path += L".zip";
 
-				wprintf(L"\n%d - file : %s\n", i, str_target_full_path.GetBuffer(0));
+				CString str_apk_file_name = str_target_unzip_path + CString(L".apk");
+				wprintf(L"\n%d - apk file name : %s\n", i+1, str_apk_file_name.GetBuffer(0));
+				str_apk_file_name.ReleaseBuffer();
 
 				// 2.1 이름변경(apk->zip) 복사
 				CopyFileEx(st_file_info.str_file_full_path, str_target_full_path, NULL, NULL, NULL, COPY_FILE_FAIL_IF_EXISTS);
@@ -280,20 +285,30 @@ int main()
 				ExtractSmali(str_target_unzip_path, str_src_path, L"baksmali-2.0.5.jar");
 
 				// 2.4 find command
-				FindKeyword(str_target_unzip_path + CString(L"\\out"), CString(L"\\*.*"), str_find_command, list_found_info);
+				FindKeyword(str_target_unzip_path, CString(L"\\*.*"), str_find_command, list_found_info);
 			}
 			
 			// 3. 찾은 정보를 나열
-			wprintf(L"############# result of search #############\n");
-			wprintf(L" str_src_path(%s) \n", str_src_path.GetBuffer(0));
-			wprintf(L" str_find_command(%s) \n", str_find_command.GetBuffer(0));
-			wprintf(L"############################################\n\n");
+			wprintf(L"\n\n\n\n###################################### Result of Analyzing #####################################\n");
+			wprintf(L"1. Find Command : %s\n", str_find_command.GetBuffer(0));
+			wprintf(L"2. Target Path : %s\n", str_src_path.GetBuffer(0));
+			//wprintf(L"################################################################################################\n\n\n");
 
+			CString str_apk_name;
 			pos = list_found_info.GetHeadPosition();
 			for (int i = 0; i < list_found_info.GetCount(); i++)
 			{
 				FindInfo st_find_info = list_found_info.GetNext(pos);
-				wprintf(L"Line(%d), file path(%s)\n", st_find_info.st_find_file_info.num_line, st_find_info.st_find_file_info.str_file_full_path.GetBuffer(0));
+				
+				//apk file name은 새로운 apk 가 나올때만 출력하도록 한다.
+				if (str_apk_name.Compare(st_find_info.str_apk_file_name))
+				{
+					wprintf(L"\nAPK File Name : %s\n", st_find_info.str_apk_file_name.GetBuffer(0));
+					st_find_info.str_apk_file_name.ReleaseBuffer();
+					str_apk_name = st_find_info.str_apk_file_name;
+				}
+				
+				wprintf(L"\t\t\tLine(%d), file path(%s)\n", st_find_info.st_find_file_info.num_line, st_find_info.st_find_file_info.str_file_full_path.GetBuffer(0));
 				st_find_info.st_find_file_info.str_file_full_path.ReleaseBuffer();
 			}
 		}
