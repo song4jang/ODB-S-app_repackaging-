@@ -176,6 +176,9 @@ void FindKeyword(IN CString str_find_path, IN CString str_filter, IN CString str
 				{
 					nLineCnt++;
 					
+					str_read_line.MakeUpper();
+					str_find_keyword.MakeUpper();
+
 					if (str_read_line.Find(str_find_keyword) != -1)
 					{
 						FindInfo info;
@@ -202,6 +205,36 @@ void FindKeyword(IN CString str_find_path, IN CString str_filter, IN CString str
 	}
 }
 
+void WriteResult(IN CString str_find_command, IN CString str_src_path, IN CList <FindInfo, FindInfo&> &list_found_info)
+{
+	
+}
+
+void PrintResult(IN CString str_find_command, IN CString str_src_path, IN CList <FindInfo, FindInfo&> &list_found_info)
+{
+	wprintf(L"\n\n\n\n###################################### Result of Analyzing #####################################\n");
+	wprintf(L"1. Find Command : %s\n", str_find_command.GetBuffer(0));
+	wprintf(L"2. Target Path : %s\n", str_src_path.GetBuffer(0));
+
+	CString str_apk_name;
+	POSITION pos = list_found_info.GetHeadPosition();
+	for (int i = 0; i < list_found_info.GetCount(); i++)
+	{
+		FindInfo st_find_info = list_found_info.GetNext(pos);
+
+		//apk file name은 새로운 apk 가 나올때만 출력하도록 한다.
+		if (str_apk_name.Compare(st_find_info.str_apk_file_name))
+		{
+			wprintf(L"\nAPK File Name : %s\n", st_find_info.str_apk_file_name.GetBuffer(0));
+			st_find_info.str_apk_file_name.ReleaseBuffer();
+			str_apk_name = st_find_info.str_apk_file_name;
+		}
+
+		wprintf(L"\t\t\tLine(%d), file path(%s)\n", st_find_info.st_find_file_info.num_line, st_find_info.st_find_file_info.str_file_full_path.GetBuffer(0));
+		st_find_info.st_find_file_info.str_file_full_path.ReleaseBuffer();
+	}
+}
+
 int main()
 {
     int nRetCode = 0;
@@ -225,11 +258,12 @@ int main()
 			LPWSTR *pStr = CommandLineToArgvW(GetCommandLine(), &nCnt);
 
 			CString str_src_path;
-			CString str_find_command;
+			CList<CString, CString&> list_find_command;
 			if (nCnt >= 2)
 			{
 				str_src_path.Format(L"%s", pStr[1]);  //배열 처럼 쓸수있다. // pStr[0]은 실행파일. 1번부터가 인자
-				str_find_command.Format(L"%s", pStr[2]);
+				for (int i = 2; i < nCnt; i++) // command는 2번재 인자 부터
+					list_find_command.AddTail((CString)pStr[i]);
 			}
 			else
 			{
@@ -253,7 +287,7 @@ int main()
 			CList <myFileInfo, myFileInfo&> list_found_file;
 			FindFile(str_src_path, CString(L"\\*.apk"), list_found_file);
 
-			CList <FindInfo, FindInfo&> list_found_info;
+			CList <CString, CString&> list_target_unzip_path;
 
 			CString str_target_unzip_path;
 			CString str_target_full_path;
@@ -284,32 +318,27 @@ int main()
 				// 2.3 dex -> smali
 				ExtractSmali(str_target_unzip_path, str_src_path, L"baksmali-2.0.5.jar");
 
+				list_target_unzip_path.AddTail(str_target_unzip_path);
 				// 2.4 find command
-				FindKeyword(str_target_unzip_path, CString(L"\\*.*"), str_find_command, list_found_info);
+				//FindKeyword(str_target_unzip_path, CString(L"\\*.*"), str_find_command, list_found_info);
 			}
-			
-			// 3. 찾은 정보를 나열
-			wprintf(L"\n\n\n\n###################################### Result of Analyzing #####################################\n");
-			wprintf(L"1. Find Command : %s\n", str_find_command.GetBuffer(0));
-			wprintf(L"2. Target Path : %s\n", str_src_path.GetBuffer(0));
-			//wprintf(L"################################################################################################\n\n\n");
 
-			CString str_apk_name;
-			pos = list_found_info.GetHeadPosition();
-			for (int i = 0; i < list_found_info.GetCount(); i++)
+			// 2.5 find command
+			CList <FindInfo, FindInfo&> list_found_info;
+			pos = list_target_unzip_path.GetHeadPosition();
+
+			for (int i = 0; i < list_target_unzip_path.GetCount(); i++)
 			{
-				FindInfo st_find_info = list_found_info.GetNext(pos);
-				
-				//apk file name은 새로운 apk 가 나올때만 출력하도록 한다.
-				if (str_apk_name.Compare(st_find_info.str_apk_file_name))
+				str_target_unzip_path = list_target_unzip_path.GetNext(pos);
+
+				POSITION pos_cmd = list_find_command.GetHeadPosition();
+				for (int j = 0; j < list_find_command.GetCount(); j++)
 				{
-					wprintf(L"\nAPK File Name : %s\n", st_find_info.str_apk_file_name.GetBuffer(0));
-					st_find_info.str_apk_file_name.ReleaseBuffer();
-					str_apk_name = st_find_info.str_apk_file_name;
+					CString str_find_command = list_find_command.GetNext(pos_cmd);
+					FindKeyword(str_target_unzip_path, CString(L"\\*.*"), str_find_command, list_found_info);
+					
+					PrintResult(str_find_command, str_src_path, list_found_info);
 				}
-				
-				wprintf(L"\t\t\tLine(%d), file path(%s)\n", st_find_info.st_find_file_info.num_line, st_find_info.st_find_file_info.str_file_full_path.GetBuffer(0));
-				st_find_info.st_find_file_info.str_file_full_path.ReleaseBuffer();
 			}
 		}
     }
