@@ -26,6 +26,7 @@ typedef struct _stFindFileInfo
 {
 	CString str_file_full_path;
 	CString str_file_name;
+	CString str_line_content;
 	int num_line;
 }FindFileInfo;
 
@@ -176,8 +177,8 @@ void FindKeyword(IN CString str_find_path, IN CString str_filter, IN CString str
 				{
 					nLineCnt++;
 					
-					str_read_line.MakeUpper();
-					str_find_keyword.MakeUpper();
+					//str_read_line.MakeUpper();
+					//str_find_keyword.MakeUpper();
 
 					if (str_read_line.Find(str_find_keyword) != -1)
 					{
@@ -186,6 +187,7 @@ void FindKeyword(IN CString str_find_path, IN CString str_filter, IN CString str
 						info.st_find_file_info.str_file_full_path = st_file_info.str_file_full_path;
 						info.st_find_file_info.str_file_name = st_file_info.str_file_name;
 						info.str_apk_file_name = str_find_path + CString(L".apk");
+						info.st_find_file_info.str_line_content = str_read_line.GetString();
 
 						list_find.AddTail(info);
 #ifdef _DEBUG
@@ -210,6 +212,7 @@ void WriteResult(IN CString str_find_command, IN CString str_src_path, IN CList 
 	
 }
 
+//void PrintResult(IN CString str_find_command, IN CString str_src_path, IN CList <FindInfo, FindInfo&> &list_found_info)
 void PrintResult(IN CString str_find_command, IN CString str_src_path, IN CList <FindInfo, FindInfo&> &list_found_info)
 {
 	wprintf(L"\n\n\n\n###################################### Result of Analyzing #####################################\n");
@@ -230,8 +233,9 @@ void PrintResult(IN CString str_find_command, IN CString str_src_path, IN CList 
 			str_apk_name = st_find_info.str_apk_file_name;
 		}
 
-		wprintf(L"\t\t\tLine(%d), file path(%s)\n", st_find_info.st_find_file_info.num_line, st_find_info.st_find_file_info.str_file_full_path.GetBuffer(0));
+		wprintf(L"\t\t\tLine(%d), file path(%s)\n\t\t\t\tline(%s)\n", st_find_info.st_find_file_info.num_line, st_find_info.st_find_file_info.str_file_full_path.GetBuffer(0), st_find_info.st_find_file_info.str_line_content.GetBuffer(0));
 		st_find_info.st_find_file_info.str_file_full_path.ReleaseBuffer();
+		st_find_info.st_find_file_info.str_line_content.ReleaseBuffer();
 	}
 }
 
@@ -337,7 +341,7 @@ int main()
 					CString str_find_command = list_find_command.GetNext(pos_cmd);
 					FindKeyword(str_target_unzip_path, CString(L"\\*.*"), str_find_command, list_found_info);
 					
-					PrintResult(str_find_command, str_src_path, list_found_info);
+					PrintResult(str_find_command, str_target_unzip_path + CString(L".apk"), list_found_info);
 				}
 			}
 		}
