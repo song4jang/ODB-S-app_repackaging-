@@ -9,7 +9,12 @@
 #define new DEBUG_NEW
 #endif
 
+
+// 성능상의 문제로 COM을 이용한 windows default unzip을 사용하지 않는다.
 #include "my_zip.h"
+
+// 7zip을 이용한다.
+#include "my_7zip.h"
 
 CWinApp theApp;
 
@@ -239,6 +244,50 @@ void PrintResult(IN CString str_find_command, IN CString str_src_path, IN CList 
 	}
 }
 
+// 하나의 앱에 대한 분석 내용이라도, AnalysisList에는 동일한 AppName이 여러개 존재 할 수 있다. 왜? AnalysisList는 매칭되는 AT Command 중심으로 항목이 존재하므로.
+int GetAppCountinAnalysisList(IN CList <FindInfo, FindInfo&> &list_found_info)
+{
+	int vulerable_app_cnt = 0;
+	POSITION pos = list_found_info.GetHeadPosition();
+	CString str_before_apk_name;
+
+	for (int i = 0; i < list_found_info.GetCount(); i++)
+	{
+		FindInfo st_find_info = list_found_info.GetNext(pos);
+
+		if (!str_before_apk_name.CompareNoCase(st_find_info.str_apk_file_name))
+			continue;
+		 
+		str_before_apk_name = st_find_info.str_apk_file_name;
+		vulerable_app_cnt++;
+	}
+
+	return vulerable_app_cnt;
+}
+void PrintResultSummary(IN CList <CString, CString&> &list_target_unzip_path, IN CList <FindInfo, FindInfo&> &list_found_info)
+{
+	wprintf(L"\n\n\n\n###################################### App Risk Analysis #####################################\n");
+	wprintf(L"1. Total App Count: %lld\n", list_target_unzip_path.GetCount());
+	int vulerable_app_cnt = GetAppCountinAnalysisList(list_found_info);
+	wprintf(L"2. Vulnerable App Count: %d(%.1lf %%)\n", vulerable_app_cnt, (double)vulerable_app_cnt / list_target_unzip_path.GetCount() * 100.0);
+	wprintf(L"3. Vulnerable App Name :\n");
+	 
+	// Vulnerable App 판별
+	CString str_before_apk_name;
+	POSITION pos = list_found_info.GetHeadPosition();
+	for (int i = 0; i < list_found_info.GetCount(); i++)
+	{
+		FindInfo st_find_info = list_found_info.GetNext(pos);
+		
+		if (!str_before_apk_name.CompareNoCase(st_find_info.str_apk_file_name))
+			continue;
+		
+		str_before_apk_name = st_find_info.str_apk_file_name;
+
+		wprintf(L"\t %d) %ws\n", i+1, st_find_info.str_apk_file_name.GetBuffer(0));
+		st_find_info.str_apk_file_name.ReleaseBuffer();
+	}
+}
 int main()
 {
     int nRetCode = 0;
@@ -296,7 +345,7 @@ int main()
 			CString str_target_unzip_path;
 			CString str_target_full_path;
 
-			wprintf(L"\n\n####################################### Analyzing APK File #######################################\n");
+			wprintf(L"\n\n####################################### Analyzing App(APK File) #######################################\n");
 
 			POSITION pos = list_found_file.GetHeadPosition();
 			for (int i = 0; i < list_found_file.GetCount(); i++)
@@ -310,7 +359,7 @@ int main()
 				str_target_full_path += L".zip";
 
 				CString str_apk_file_name = str_target_unzip_path + CString(L".apk");
-				wprintf(L"\n%d - apk file name : %s\n", i+1, str_apk_file_name.GetBuffer(0));
+				wprintf(L"\n%d - App Name : %s\n", i+1, str_apk_file_name.GetBuffer(0));
 				str_apk_file_name.ReleaseBuffer();
 
 				// 2.1 이름변경(apk->zip) 복사
@@ -323,8 +372,6 @@ int main()
 				ExtractSmali(str_target_unzip_path, str_src_path, L"baksmali-2.0.5.jar");
 
 				list_target_unzip_path.AddTail(str_target_unzip_path);
-				// 2.4 find command
-				//FindKeyword(str_target_unzip_path, CString(L"\\*.*"), str_find_command, list_found_info);
 			}
 
 			// 2.5 find command
@@ -341,9 +388,14 @@ int main()
 					CString str_find_command = list_find_command.GetNext(pos_cmd);
 					FindKeyword(str_target_unzip_path, CString(L"\\*.*"), str_find_command, list_found_info);
 					
+					// 실제 공격할 때만 자세히 출력하자
 					PrintResult(str_find_command, str_target_unzip_path + CString(L".apk"), list_found_info);
 				}
 			}
+			
+			// 논문 용 결과 출력
+			PrintResultSummary(list_target_unzip_path, list_found_info);
+		
 		}
     }
     else
