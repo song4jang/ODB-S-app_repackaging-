@@ -1,0 +1,22 @@
+ATD
+ATD\r
+ATD\n
+AT D
+AT D\r
+AT D\n
+AT d
+AT d\r
+AT d\n
+
+ATZ
+ATZ\r
+ATZ\n
+AT Z
+AT Z\r
+AT Z\n
+AT z
+AT z\r
+AT z\n
+
+AT BRD\r
+AT BRD\n

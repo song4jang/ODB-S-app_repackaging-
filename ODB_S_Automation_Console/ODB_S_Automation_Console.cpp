@@ -275,6 +275,7 @@ void PrintResultSummary(IN CList <CString, CString&> &list_target_unzip_path, IN
 	// Vulnerable App 판별
 	CString str_before_apk_name;
 	POSITION pos = list_found_info.GetHeadPosition();
+	int app_cnt = 1;
 	for (int i = 0; i < list_found_info.GetCount(); i++)
 	{
 		FindInfo st_find_info = list_found_info.GetNext(pos);
@@ -284,10 +285,32 @@ void PrintResultSummary(IN CList <CString, CString&> &list_target_unzip_path, IN
 		
 		str_before_apk_name = st_find_info.str_apk_file_name;
 
-		wprintf(L"\t %d) %ws\n", i+1, st_find_info.str_apk_file_name.GetBuffer(0));
+		wprintf(L"\t %d) %ws\n", app_cnt++, st_find_info.str_apk_file_name.GetBuffer(0));
 		st_find_info.str_apk_file_name.ReleaseBuffer();
 	}
 }
+
+BOOL GetFindCommand(IN CString str_command_file, IN CList<CString, CString&> &list_find_command)
+{
+	CStdioFile stdio_src_file;
+	CString str_read_line;
+
+	if (stdio_src_file.Open(str_command_file, CFile::modeRead))
+	{
+		while (stdio_src_file.ReadString(str_read_line))
+		{
+			list_find_command.AddTail(str_read_line);
+		}
+		
+		stdio_src_file.Close();
+	}
+	else
+	{
+		return FALSE;
+	}
+	return TRUE;
+}
+
 int main()
 {
     int nRetCode = 0;
@@ -312,6 +335,9 @@ int main()
 
 			CString str_src_path;
 			CList<CString, CString&> list_find_command;
+			
+			// AT Command의 종류가 많아지면서, 파일(AT_Command.txt)에서 입력 받는 형식으로 변경한다.
+			/*
 			if (nCnt >= 2)
 			{
 				str_src_path.Format(L"%s", pStr[1]);  //배열 처럼 쓸수있다. // pStr[0]은 실행파일. 1번부터가 인자
@@ -323,7 +349,17 @@ int main()
 				AfxMessageBox(L"not enough argument");
 				return 0;
 			}
+			*/
 
+			str_src_path.Format(L"%s", pStr[1]);
+
+			CString str_command_file("AT_Command.txt");
+			if (FALSE == GetFindCommand(str_command_file, list_find_command))
+			{
+				AfxMessageBox(L"GetFindCommand failed");
+				return 0;
+			}
+			
 			// 1. 작업 대상 디렉토리 생성 - 작업대상 디렉토리명 구성(년_월_일_시분초)
 			CString str_target_dir(str_src_path);
 			str_target_dir += L"\\";
