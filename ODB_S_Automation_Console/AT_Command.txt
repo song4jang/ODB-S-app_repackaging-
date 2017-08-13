@@ -1,6 +1,9 @@
 ATD
 ATD\r
 ATD\n
+ATd
+ATd\r
+ATd\n
 AT D
 AT D\r
 AT D\n
@@ -11,6 +14,9 @@ AT d\n
 ATZ
 ATZ\r
 ATZ\n
+ATz
+ATz\r
+ATz\n
 AT Z
 AT Z\r
 AT Z\n
@@ -18,5 +24,184 @@ AT z
 AT z\r
 AT z\n
 
-AT BRD\r
-AT BRD\n
+ATBRT
+ATBRT\r
+ATBRT\n
+ATbrt
+ATbrt\r
+ATbrt\n
+AT BRT
+AT BRT\r
+AT BRT\n
+AT brt
+AT brt\r
+AT brt\n
+
+ATE0
+ATE0\r
+ATE0\n
+ATe0
+ATe0\r
+ATe0\n
+AT E0
+AT E0\r
+AT E0\n
+AT e0
+AT e0\r
+AT e0\n
+
+ATE1
+ATE1\r
+ATE1\n
+ATe1
+ATe1\r
+ATe1\n
+AT E1
+AT E1\r
+AT E1\n
+AT e1
+AT e1\r
+AT e1\n
+
+ATAL
+ATAL\r
+ATAL\n
+ATal
+ATal\r
+ATal\n
+AT AL
+AT AL\r
+AT AL\n
+AT al
+AT al\r
+AT al\n
+
+ATAR
+ATAR\r
+ATAR\n
+ATar
+ATar\r
+ATar\n
+AT AR
+AT AR\r
+AT AR\n
+AT ar
+AT ar\r
+AT ar\n
+
+ATH0
+ATH0\r
+ATH0\n
+ATh0
+ATh0\r
+ATh0\n
+AT H0
+AT H0\r
+AT H0\n
+AT h0
+AT h0\r
+AT h0\n
+
+ATH1
+ATH1\r
+ATH1\n
+ATh1
+ATh1\r
+ATh1\n
+AT H1
+AT H1\r
+AT H1\n
+AT h1
+AT h1\r
+AT h1\n
+
+ATR0
+ATR0\r
+ATR0\n
+ATr0
+ATr0\r
+ATr0\n
+AT R0
+AT R0\r
+AT R0\n
+AT r0
+AT r0\r
+AT r0\n
+
+ATR1
+ATR1\r
+ATR1\n
+ATr1
+ATr1\r
+ATr1\n
+AT R1
+AT R1\r
+AT R1\n
+AT r1
+AT r1\r
+AT r1\n
+
+ATSH
+ATSH\r
+ATSH\n
+ATsh
+ATsh\r
+ATsh\n
+AT SH
+AT SH\r
+AT SH\n
+AT sh
+AT sh\r
+AT sh\n
+
+ATSP
+ATSP\r
+ATSP\n
+ATsp
+ATsp\r
+ATsp\n
+AT SP
+AT SP\r
+AT SP\n
+AT sp
+AT sp\r
+AT sp\n
+
+ATCAF0
+ATCAF0\r
+ATCAF0\n
+ATcaf0
+ATcaf0\r
+ATcaf0\n
+AT CAF0
+AT CAF0\r
+AT CAF0\n
+AT caf0
+AT caf0\r
+AT caf0\n
+
+ATCAF1
+ATCAF1\r
+ATCAF1\n
+ATcaf1
+ATcaf1\r
+ATcaf1\n
+AT CAF1
+AT CAF1\r
+AT CAF1\n
+AT caf1
+AT caf1\r
+AT caf1\n
+
+ATWM
+ATWM\r
+ATWM\n
+ATwm
+ATwm\r
+ATwm\n
+AT WM
+AT WM\r
+AT WM\n
+AT wm
+AT wm\r
+AT wm\n
