@@ -196,6 +196,9 @@ BOOL FindKeyword(IN CString str_find_path, IN CString str_filter, IN CString str
 
 						list_find.AddTail(info);
 
+						wprintf(L"\t\t\tLine(%d), file path(%s)\n\t\t\t\tline(%s)\n", nLineCnt, st_file_info.str_file_full_path.GetBuffer(0), str_read_line.GetString());
+						st_file_info.str_file_full_path.ReleaseBuffer();
+
 						///////////// 임시
 						stdio_src_file.Close();
 						return TRUE;
@@ -422,7 +425,7 @@ int main()
 			for (int i = 0; i < list_target_unzip_path.GetCount(); i++)
 			{
 				wprintf(L"\n\n\n\n###################################### Result of Analyzing #####################################\n");
-				wprintf(L"1. Target Path : %s\n", str_target_unzip_path.GetBuffer(0));
+				wprintf(L"(%d). Target Path : %s\n", i+1, str_target_unzip_path.GetBuffer(0));
 
 				str_target_unzip_path = list_target_unzip_path.GetNext(pos);
 
@@ -437,10 +440,12 @@ int main()
 					///////////// 임시
 
 					// 실제 공격할 때만 자세히 출력하자
-					PrintResult(str_find_command, str_target_unzip_path + CString(L".apk"), list_found_info);
+					//PrintResult(str_find_command, str_target_unzip_path + CString(L".apk"), list_found_info);
 
+					printf("(%d),(%d)\n", i, j);
 					if (aa == TRUE)
 						break;
+					
 				}
 			}
 			
