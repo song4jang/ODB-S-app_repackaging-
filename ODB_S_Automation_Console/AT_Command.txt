@@ -10,7 +10,6 @@ AT D\n
 AT d
 AT d\r
 AT d\n
-
 ATZ
 ATZ\r
 ATZ\n
@@ -23,7 +22,6 @@ AT Z\n
 AT z
 AT z\r
 AT z\n
-
 ATBRT
 ATBRT\r
 ATBRT\n
@@ -36,7 +34,6 @@ AT BRT\n
 AT brt
 AT brt\r
 AT brt\n
-
 ATE0
 ATE0\r
 ATE0\n
@@ -49,7 +46,6 @@ AT E0\n
 AT e0
 AT e0\r
 AT e0\n
-
 ATE1
 ATE1\r
 ATE1\n
@@ -62,7 +58,6 @@ AT E1\n
 AT e1
 AT e1\r
 AT e1\n
-
 ATAL
 ATAL\r
 ATAL\n
@@ -75,7 +70,6 @@ AT AL\n
 AT al
 AT al\r
 AT al\n
-
 ATAR
 ATAR\r
 ATAR\n
@@ -88,7 +82,6 @@ AT AR\n
 AT ar
 AT ar\r
 AT ar\n
-
 ATH0
 ATH0\r
 ATH0\n
@@ -101,7 +94,6 @@ AT H0\n
 AT h0
 AT h0\r
 AT h0\n
-
 ATH1
 ATH1\r
 ATH1\n
@@ -114,7 +106,6 @@ AT H1\n
 AT h1
 AT h1\r
 AT h1\n
-
 ATR0
 ATR0\r
 ATR0\n
@@ -127,7 +118,6 @@ AT R0\n
 AT r0
 AT r0\r
 AT r0\n
-
 ATR1
 ATR1\r
 ATR1\n
@@ -140,7 +130,6 @@ AT R1\n
 AT r1
 AT r1\r
 AT r1\n
-
 ATSH
 ATSH\r
 ATSH\n
@@ -153,7 +142,6 @@ AT SH\n
 AT sh
 AT sh\r
 AT sh\n
-
 ATSP
 ATSP\r
 ATSP\n
@@ -166,7 +154,6 @@ AT SP\n
 AT sp
 AT sp\r
 AT sp\n
-
 ATCAF0
 ATCAF0\r
 ATCAF0\n
@@ -179,7 +166,6 @@ AT CAF0\n
 AT caf0
 AT caf0\r
 AT caf0\n
-
 ATCAF1
 ATCAF1\r
 ATCAF1\n
@@ -192,7 +178,6 @@ AT CAF1\n
 AT caf1
 AT caf1\r
 AT caf1\n
-
 ATWM
 ATWM\r
 ATWM\n

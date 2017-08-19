@@ -157,7 +157,7 @@ void ExtractSmali(IN CString str_target_unzip_path, IN CString str_src_path, IN 
 	}
 }
 
-void FindKeyword(IN CString str_find_path, IN CString str_filter, IN CString str_find_keyword, OUT CList<FindInfo, FindInfo&> &list_find)
+BOOL FindKeyword(IN CString str_find_path, IN CString str_filter, IN CString str_find_keyword, OUT CList<FindInfo, FindInfo&> &list_find)
 {
 	try
 	{
@@ -195,6 +195,11 @@ void FindKeyword(IN CString str_find_path, IN CString str_filter, IN CString str
 						info.st_find_file_info.str_line_content = str_read_line.GetString();
 
 						list_find.AddTail(info);
+
+						///////////// 임시
+						stdio_src_file.Close();
+						return TRUE;
+						///////////// 임시
 #ifdef _DEBUG
 						wprintf(L"nLineCnt %d, st_file_info.str_file_full_path : %s\n\n", nLineCnt, st_file_info.str_file_full_path.GetBuffer(0));
 #endif
@@ -220,9 +225,9 @@ void WriteResult(IN CString str_find_command, IN CString str_src_path, IN CList 
 //void PrintResult(IN CString str_find_command, IN CString str_src_path, IN CList <FindInfo, FindInfo&> &list_found_info)
 void PrintResult(IN CString str_find_command, IN CString str_src_path, IN CList <FindInfo, FindInfo&> &list_found_info)
 {
-	wprintf(L"\n\n\n\n###################################### Result of Analyzing #####################################\n");
-	wprintf(L"1. Find Command : %s\n", str_find_command.GetBuffer(0));
-	wprintf(L"2. Target Path : %s\n", str_src_path.GetBuffer(0));
+//	wprintf(L"\n\n\n\n###################################### Result of Analyzing #####################################\n");
+//	wprintf(L"1. Find Command : %s\n", str_find_command.GetBuffer(0));
+//	wprintf(L"2. Target Path : %s\n", str_src_path.GetBuffer(0));
 
 	CString str_apk_name;
 	POSITION pos = list_found_info.GetHeadPosition();
@@ -416,16 +421,26 @@ int main()
 
 			for (int i = 0; i < list_target_unzip_path.GetCount(); i++)
 			{
+				wprintf(L"\n\n\n\n###################################### Result of Analyzing #####################################\n");
+				wprintf(L"1. Target Path : %s\n", str_target_unzip_path.GetBuffer(0));
+
 				str_target_unzip_path = list_target_unzip_path.GetNext(pos);
 
 				POSITION pos_cmd = list_find_command.GetHeadPosition();
 				for (int j = 0; j < list_find_command.GetCount(); j++)
 				{
 					CString str_find_command = list_find_command.GetNext(pos_cmd);
-					FindKeyword(str_target_unzip_path, CString(L"\\*.*"), str_find_command, list_found_info);
 					
+					///////////// 임시
+					BOOL aa = FALSE;
+					aa = FindKeyword(str_target_unzip_path, CString(L"\\*.*"), str_find_command, list_found_info);
+					///////////// 임시
+
 					// 실제 공격할 때만 자세히 출력하자
 					PrintResult(str_find_command, str_target_unzip_path + CString(L".apk"), list_found_info);
+
+					if (aa == TRUE)
+						break;
 				}
 			}
 			
